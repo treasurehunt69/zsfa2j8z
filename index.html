@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MGIT Treasure Hunt · 3x3 Image Puzzle</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Poppins', sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(139, 69, 19, 0.25), transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(218, 165, 32, 0.15), transparent 30%),
+        linear-gradient(135deg, #180b0b, #3a1111 50%, #160707);
+      color: #f5e6c8;
+      padding: 16px;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border: 1px solid rgba(212, 175, 55, 0.12);
+      border-radius: 50%;
+      top: -250px;
+      left: -250px;
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border: 1px solid rgba(212, 175, 55, 0.12);
+      border-radius: 50%;
+      bottom: -250px;
+      right: -200px;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+      background: rgba(35, 12, 12, 0.94);
+      border: 1px solid rgba(212, 175, 55, 0.55);
+      border-radius: 20px;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6);
+      position: relative;
+      z-index: 2;
+    }
+
+    .container::before,
+    .container::after {
+      content: "";
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      border-color: #d4af37;
+      border-style: solid;
+    }
+
+    .container::before {
+      top: 15px;
+      left: 15px;
+      border-width: 2px 0 0 2px;
+      border-radius: 8px 0 0 0;
+    }
+
+    .container::after {
+      bottom: 15px;
+      right: 15px;
+      border-width: 0 2px 2px 0;
+      border-radius: 0 0 8px 0;
+    }
+
+    .logo {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      letter-spacing: 4px;
+      color: #d4af37;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #bcae99;
+      margin-bottom: 30px;
+    }
+
+    .compass {
+      font-size: 48px;
+      color: #d4af37;
+      margin-bottom: 15px;
+      text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 30px;
+      letter-spacing: 2px;
+      margin: 5px 0 10px;
+      color: #f1d58a;
+    }
+
+    .instruction {
+      color: #c9bba5;
+      font-size: 14px;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 10px;
+      color: #fff2cf;
+      font-size: 16px;
+      text-align: center;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input::placeholder {
+      color: #8f8170;
+    }
+
+    input:focus {
+      border-color: #d4af37;
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #8b1e1e, #5c1010);
+      color: #f5d98b;
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      cursor: pointer;
+      border: 1px solid rgba(212, 175, 55, 0.5);
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, #a52626, #701515);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(212, 175, 55, 0.15);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    #error {
+      display: none;
+      color: #e57373;
+      font-size: 13px;
+      margin-top: 15px;
+    }
+
+    #message {
+      display: none;
+    }
+
+    .success-icon {
+      font-size: 45px;
+      margin-bottom: 10px;
+    }
+
+    .success-title {
+      font-family: 'Cinzel', serif;
+      color: #d4af37;
+      font-size: 25px;
+      letter-spacing: 2px;
+      margin-bottom: 25px;
+    }
+
+    /* --- PUZZLE BOX --- */
+    .puzzle-box {
+      background: linear-gradient(rgba(255,255,255,0.02), rgba(255,255,255,0.02));
+      border-left: 3px solid #d4af37;
+      border-right: 3px solid #d4af37;
+      padding: 25px 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+    }
+
+    /* 3x3 puzzle grid */
+    .puzzle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 16px;
+      max-width: 340px;
+      aspect-ratio: 1 / 1;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .puzzle-tile {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      height: 100%;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s;
+      background-size: 300% 300%;        /* 3x3 → 300% */
+      background-repeat: no-repeat;
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .puzzle-tile:hover:not(.empty) {
+      transform: scale(1.04);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
+      filter: brightness(1.15);
+      z-index: 2;
+    }
+
+    .puzzle-tile.empty {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px dashed rgba(212, 175, 55, 0.2);
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .puzzle-tile.empty:hover {
+      transform: none;
+      box-shadow: none;
+      filter: none;
+    }
+
+    .puzzle-hint {
+      font-size: 12px;
+      color: #a99a85;
+      letter-spacing: 1px;
+      margin-top: 6px;
+    }
+
+    .puzzle-hint span {
+      color: #d4af37;
+      font-weight: 600;
+    }
+
+    .next-box {
+      padding: 18px;
+      background: rgba(139, 30, 30, 0.25);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .next-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #a99a85;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .next-password {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #d4af37;
+      letter-spacing: 2px;
+      margin: 0;
+      text-transform: uppercase;
+      word-break: break-all;
+    }
+
+    .footer {
+      margin-top: 28px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #74695c;
+      text-transform: uppercase;
+    }
+
+    .win-badge {
+      display: inline-block;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid #d4af37;
+      color: #f1d58a;
+      padding: 6px 18px;
+      border-radius: 40px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      font-family: 'Cinzel', serif;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 28px 16px;
+      }
+      h1 {
+        font-size: 22px;
+      }
+      .puzzle-grid {
+        max-width: 260px;
+        gap: 4px;
+        padding: 5px;
+      }
+      .puzzle-tile {
+        border-radius: 4px;
+      }
+      .next-password {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login">
+      <div class="logo">MGIT</div>
+      <div class="subtitle">Treasure Hunt 2026</div>
+      <div class="compass">◈</div>
+      <h1>THE JOURNEY BEGINS</h1>
+      <p class="instruction">
+        You have discovered a hidden clue.<br>
+        Enter the password to unlock it.
+      </p>
+      <input type="password" id="password" placeholder="Enter secret password" autocomplete="off">
+      <button onclick="checkPassword()">UNLOCK CLUE</button>
+      <p id="error">✦ Wrong password. The trail remains hidden...</p>
+      <div class="footer">Mahatma Gandhi Institute / MGIT Treasure Hunt</div>
+    </div>
+
+    <!-- PUZZLE SCREEN -->
+    <div id="message">
+      <div class="logo">MGIT</div>
+      <div class="subtitle">Treasure Hunt 2026</div>
+      <div class="success-icon">🧩</div>
+      <div class="success-title">SOLVE THE PUZZLE</div>
+
+      <div class="puzzle-box">
+        <div class="puzzle-grid" id="puzzleGrid" aria-label="3 by 3 sliding puzzle"></div>
+        <div class="puzzle-hint">
+          Tap a tile next to the empty space to slide it · <span id="moveCounter">0</span> moves
+        </div>
+        <div id="winBadge" style="display:none;" class="win-badge">✦ PUZZLE SOLVED ✦</div>
+      </div>
+
+      <div class="next-box" id="nextBox" style="display:none;">
+        <div class="next-label">Password for the next QR</div>
+        <p class="next-password" id="nextPasswordDisplay">—</p>
+      </div>
+
+      <div class="footer">Follow the trail • Find the next QR • Continue the hunt</div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    //  CONFIGURATION
+    //  Replace the IMAGE_URL with your actual image.
+    //  The image will be split into 9 tiles (3x3 grid).
+    // ============================================================
+    const IMAGE_URL = "/image.jpg"; // ← YOUR IMAGE HERE
+    const GRID_SIZE = 3; // 3x3 = 9 tiles
+    const TOTAL_TILES = GRID_SIZE * GRID_SIZE;
+
+    // ============================================================
+    //  PUZZLE STATE
+    // ============================================================
+    let tiles = [];          // array of tile indices (0 .. 8)
+    let emptyIndex = TOTAL_TILES - 1; // bottom-right is the empty slot
+    let moves = 0;
+    let solved = false;
+    let nextPasswordFromServer = "";
+
+    // ============================================================
+    //  DOM REFS
+    // ============================================================
+    const puzzleGrid = document.getElementById("puzzleGrid");
+    const moveCounter = document.getElementById("moveCounter");
+    const winBadge = document.getElementById("winBadge");
+    const nextBox = document.getElementById("nextBox");
+    const nextPasswordDisplay = document.getElementById("nextPasswordDisplay");
+
+    // ============================================================
+    //  PASSWORD CHECK (serverless — keeps passwords on the server)
+    // ============================================================
+    async function checkPassword() {
+      const entered = document.getElementById("password").value;
+      const errorEl = document.getElementById("error");
+
+      try {
+        const res = await fetch("/api/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: entered }),
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          // Hide login, show puzzle
+          document.getElementById("login").style.display = "none";
+          document.getElementById("message").style.display = "block";
+
+          // Store the next password from server
+          nextPasswordFromServer = data.next || "—";
+
+          // Initialize the puzzle
+          initPuzzle();
+          errorEl.style.display = "none";
+        } else {
+          errorEl.style.display = "block";
+        }
+      } catch (e) {
+        errorEl.textContent = "✦ Connection error. Try again.";
+        errorEl.style.display = "block";
+      }
+    }
+
+    // ============================================================
+    //  PUZZLE INITIALIZATION
+    // ============================================================
+    function initPuzzle() {
+      // Create solved order [0, 1, 2, ..., 8]
+      tiles = Array.from({ length: TOTAL_TILES }, (_, i) => i);
+      emptyIndex = TOTAL_TILES - 1;
+      moves = 0;
+      solved = false;
+      moveCounter.textContent = "0";
+      winBadge.style.display = "none";
+      nextBox.style.display = "none";
+
+      // Shuffle the puzzle (guaranteed solvable — just random valid moves)
+      shufflePuzzle(40); // 40 random moves for 3x3 (enough to mix well)
+
+      renderPuzzle();
+    }
+
+    // ============================================================
+    //  SHUFFLE — perform random valid moves from solved state
+    //  (guarantees the puzzle is always solvable)
+    // ============================================================
+    function shufflePuzzle(times) {
+      let lastMoved = -1;
+      for (let i = 0; i < times; i++) {
+        const neighbors = getMovableNeighbors(emptyIndex);
+        // Avoid undoing the previous move too often
+        let candidates = neighbors.filter(n => n !== lastMoved);
+        if (candidates.length === 0) candidates = neighbors;
+
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        swapTiles(emptyIndex, pick);
+        lastMoved = emptyIndex; // the old empty position
+        emptyIndex = pick;
+      }
+      // Reset move counter after shuffle
+      moves = 0;
+    }
+
+    // ============================================================
+    //  GET NEIGHBORS of a position (up/down/left/right)
+    // ============================================================
+    function getMovableNeighbors(index) {
+      const row = Math.floor(index / GRID_SIZE);
+      const col = index % GRID_SIZE;
+      const neighbors = [];
+
+      if (row > 0) neighbors.push(index - GRID_SIZE);           // up
+      if (row < GRID_SIZE - 1) neighbors.push(index + GRID_SIZE); // down
+      if (col > 0) neighbors.push(index - 1);                    // left
+      if (col < GRID_SIZE - 1) neighbors.push(index + 1);        // right
+
+      return neighbors;
+    }
+
+    // ============================================================
+    //  SWAP two tile positions
+    // ============================================================
+    function swapTiles(a, b) {
+      [tiles[a], tiles[b]] = [tiles[b], tiles[a]];
+    }
+
+    // ============================================================
+    //  RENDER the puzzle grid
+    // ============================================================
+    function renderPuzzle() {
+      puzzleGrid.innerHTML = "";
+
+      for (let i = 0; i < TOTAL_TILES; i++) {
+        const tileValue = tiles[i];
+        const tileEl = document.createElement("div");
+        tileEl.className = "puzzle-tile";
+        tileEl.dataset.index = i;
+
+        if (tileValue === TOTAL_TILES - 1) {
+          // This is the empty slot
+          tileEl.classList.add("empty");
+        } else {
+          // Background position for the image slice
+          // tileValue maps to row/col in the ORIGINAL image
+          const origRow = Math.floor(tileValue / GRID_SIZE);
+          const origCol = tileValue % GRID_SIZE;
+
+          const bgX = (origCol / (GRID_SIZE - 1)) * 100;
+          const bgY = (origRow / (GRID_SIZE - 1)) * 100;
+
+          tileEl.style.backgroundImage = `url('${IMAGE_URL}')`;
+          tileEl.style.backgroundSize = `${GRID_SIZE * 100}% ${GRID_SIZE * 100}%`;
+          tileEl.style.backgroundPosition = `${bgX}% ${bgY}%`;
+        }
+
+        tileEl.addEventListener("click", () => handleTileClick(i));
+        puzzleGrid.appendChild(tileEl);
+      }
+    }
+
+    // ============================================================
+    //  HANDLE TILE CLICK — slide if adjacent to empty
+    // ============================================================
+    function handleTileClick(clickedIndex) {
+      if (solved) return;
+
+      const neighbors = getMovableNeighbors(emptyIndex);
+      if (!neighbors.includes(clickedIndex)) return; // not adjacent
+
+      // Swap
+      swapTiles(emptyIndex, clickedIndex);
+      const oldEmpty = emptyIndex;
+      emptyIndex = clickedIndex;
+
+      moves++;
+      moveCounter.textContent = moves;
+
+      renderPuzzle();
+
+      // Check win
+      if (isSolved()) {
+        solved = true;
+        winBadge.style.display = "inline-block";
+        nextBox.style.display = "block";
+        nextPasswordDisplay.textContent = nextPasswordFromServer;
+      }
+    }
+
+    // ============================================================
+    //  CHECK IF PUZZLE IS SOLVED
+    // ============================================================
+    function isSolved() {
+      for (let i = 0; i < TOTAL_TILES; i++) {
+        if (tiles[i] !== i) return false;
+      }
+      return true;
+    }
+
+    // ============================================================
+    //  KEYBOARD SUPPORT for login
+    // ============================================================
+    document.getElementById("password").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") checkPassword();
+    });
+  </script>
+
+</body>
+</html>
